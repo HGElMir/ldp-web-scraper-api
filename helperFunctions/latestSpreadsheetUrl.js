@@ -9,12 +9,17 @@ export default async function getLatestDownloadLink(){
 
     const $ = cheerio.load(data);
 
-    const sel = "div table.contentTable a"
-    const path = $(sel).first().attr("href");
+    const selectionLink = "div table.contentTable a"
+    const selectionDate = "div table.contentTable td"
+    const path = $(selectionLink).first().attr("href");
+
+    const date = $(selectionDate).first().text()
 
     if (path){
         console.warn(rootUrl + path)
-        return rootUrl + path;
+        return {"downloadLink" :rootUrl + path,
+            "date": date
+        };
     }
     else{
         const ERROR = "Failed to get latest spreadsheet link."

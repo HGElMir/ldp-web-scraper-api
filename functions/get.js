@@ -4,7 +4,7 @@ import getLatestDownloadLink from "../helperFunctions/latestSpreadsheetUrl.js"
 export default async function getLink(){
     try {
         return prepSuccessResponse({
-            "downloadLink": await getLatestDownloadLink()
+            ...await getLatestDownloadLink()
         })
     } catch (error) {
         return prepFailResponse(500, {

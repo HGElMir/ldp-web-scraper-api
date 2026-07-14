@@ -2,7 +2,10 @@ import assert from "node:assert/strict";
 import { after, before, test } from "node:test";
 
 import app from "../api/index.js";
-import { parseLatestDownloadLink } from "../helperFunctions/latestSpreadsheetUrl.js";
+import {
+  parseLatestDownloadLink,
+  parseLatestDownloadLinkFromMarkdown,
+} from "../helperFunctions/latestSpreadsheetUrl.js";
 
 let baseUrl;
 let server;
@@ -64,6 +67,19 @@ test("extracts the newest marketed spreadsheet from the current page structure",
 
   assert.deepEqual(parseLatestDownloadLink(html), {
     downloadLink: "https://moph.gov.lb/DrugsPublicPriceList/10-7-2026/WebMarketed20260710.xls",
+    date: "10/7/2026",
+  });
+});
+
+test("extracts the newest marketed spreadsheet from the reader fallback", () => {
+  const markdown = `
+    #### Drugs Prices According to the Exchange Rate Issued on 10/7/2026
+
+    [Drugs Public Price List](https://moph.gov.lb/userfiles/files/HealthCareSystem/Pharmaceuticals/DrugsPublicPriceList/10-7-2026/WebMarketed20260710.xls)
+  `;
+
+  assert.deepEqual(parseLatestDownloadLinkFromMarkdown(markdown), {
+    downloadLink: "https://moph.gov.lb/userfiles/files/HealthCareSystem/Pharmaceuticals/DrugsPublicPriceList/10-7-2026/WebMarketed20260710.xls",
     date: "10/7/2026",
   });
 });

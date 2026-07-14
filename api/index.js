@@ -18,6 +18,9 @@ app.use(express.json());
  app.get("/getLink", async (request, response) => {
 
     const result = await getLink();
+    if (result.status === 200) {
+        response.set("Cache-Control", "public, s-maxage=3600, stale-while-revalidate=86400");
+    }
     response.status(result.status).send(result)
 
  })

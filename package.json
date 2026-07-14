@@ -5,8 +5,8 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "test": "npm test",
-    "start": "node api/index.js"
+    "test": "node --test",
+    "start": "node server.js"
   },
   "repository": {
     "type": "git",

@@ -1,31 +1,38 @@
 import axios from "axios";
 import * as cheerio from "cheerio";
 
-export default async function getLatestDownloadLink(){
-    const rootUrl = "https://moph.gov.lb"
-    const url = `${rootUrl}/en/Pages/3/3101/drugs-public-price-list-`;
+const ROOT_URL = "https://moph.gov.lb";
+const PRICE_LIST_URL = `${ROOT_URL}/en/Pages/3/3101/drugs-public-price-list-`;
+const SPREADSHEET_PATH = /\/DrugsPublicPriceList\/.*\/WebMarketed[^/]*\.xlsx?$/i;
 
-    const {data} = await axios.get(url)
+export function parseLatestDownloadLink(html, rootUrl = ROOT_URL) {
+    const $ = cheerio.load(html);
+    const spreadsheetLink = $("a").filter((_, element) => {
+        const link = $(element);
+        const label = link.text().replace(/\s+/g, " ").trim();
+        const path = link.attr("href") || "";
 
-    const $ = cheerio.load(data);
+        return label === "Drugs Public Price List" && SPREADSHEET_PATH.test(path);
+    }).first();
+    const path = spreadsheetLink.attr("href");
 
-    const selectionLink = "div table.contentTable a"
-    const selectionDate = "div table.contentTable td"
-    const path = $(selectionLink).first().attr("href");
-
-    const date = $(selectionDate).first().text()
-
-    if (path){
-        console.warn(rootUrl + path)
-        return {"downloadLink" :rootUrl + path,
-            "date": date
-        };
+    if (!path) {
+        throw new Error("Failed to get latest spreadsheet link.");
     }
-    else{
-        const ERROR = "Failed to get latest spreadsheet link."
-        console.error(ERROR)
-        console.trace()
-        throw Error(ERROR);
-    }
-    
+
+    const heading = spreadsheetLink.closest("ul").prevAll("div").first().text();
+    const headingDate = heading.match(/\b\d{1,2}\/\d{1,2}\/\d{4}\b/)?.[0];
+    const pathDate = path.match(/\/(\d{1,2}-\d{1,2}-\d{4})\//)?.[1]
+        ?.replaceAll("-", "/");
+
+    return {
+        downloadLink: new URL(path, rootUrl).href,
+        date: headingDate || pathDate,
+    };
+}
+
+export default async function getLatestDownloadLink() {
+    const { data } = await axios.get(PRICE_LIST_URL, { timeout: 15_000 });
+
+    return parseLatestDownloadLink(data);
 }

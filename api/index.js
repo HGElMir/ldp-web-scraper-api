@@ -17,7 +17,8 @@ app.use(express.json());
  /** Get Download link */
  app.get("/getLink", async (request, response) => {
 
-    response.send(await getLink())
+    const result = await getLink();
+    response.status(result.status).send(result)
 
  })
 
@@ -31,7 +32,7 @@ app.use(express.json());
     }
 
     else{
-        response.send(link)
+        response.status(link.status).send(link)
     }
 
  })
